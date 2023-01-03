@@ -1,9 +1,10 @@
 #include <stdlib.h>
 #include "libfila.h"
+#include <stdio.h>
 /*struct nodo_f {
     int chave;           lista de numeros inteiros               
-    struct nodo_f *prox;  /* ponteiro para o proximo (obrigatorio)   
-    struct nodo_f *prev;  /* ponteiro para o anterior (uso opcional) 
+    struct nodo_f *prox;   ponteiro para o proximo (obrigatorio)   
+    struct nodo_f *prev;   ponteiro para o anterior (uso opcional) 
 };
 typedef struct nodo_f nodo_f_t;
 
@@ -24,12 +25,13 @@ fila_t * destroi_fila (fila_t *f){
         return NULL;
 
     while(f->ini != NULL){
-        fila_t *aux = f->ini->prox;
+        nodo_f_t *aux = f->ini->prox;
         f->ini->prox = NULL;
         free(f->ini);
         f->ini = aux;
     }
 
+    free(f);
     return NULL;
 }
 
@@ -54,7 +56,7 @@ fila_t * cria_fila (){
 /*
  * Retorna 1 se a fila esta vazia e 0 caso contrario.
  */
-int fila_vazia (fila_t *f){
+int vazia_fila (fila_t *f){
     if(f->tamanho == 0)
         return 1;
 
@@ -81,9 +83,9 @@ nodo_f_t *criar_nodo(nodo_f_t *fim_fila, int elemento){
     if(aux != NULL)
         aux->prox = fim_fila;
 
-    fim_fila->prev = aux;
     fim_fila->prox = NULL;
-    fim_fila->chave = elemento;
+    fim_fila->elem = elemento;
+
     return fim_fila;
 }
 
@@ -120,12 +122,26 @@ int insere_fila (fila_t *f, int elemento){
  * Remove o elemento do inicio da fila (politica FIFO) e o retorna.
  * Retorna 1 se a operacao foi bem sucedida e 0 caso contrario.
  */
-int retira_fila (fila_t *f, int *elemento){}
+int retira_fila (fila_t *f, int *elemento){
+    if(!f->ini)
+        return 0;
+    
+    *elemento = f->ini->elem;
+    nodo_f_t *novo_inicio = f->ini->prox;
+    destroir_nodo(f->ini);
+    f->ini = novo_inicio;
+    
+    return 1;
+}
 
-/*
- * As funcoes abaixo permitem quebrar a politica FIFO da fila,
- * Permite acesso a elementos apontados pelo ponteiro 'atual'.
- * Este ponteiro pode ser inicializado e incrementado, viabilizando
- * a implementacao de um mecanismo iterador.
- */
-
+void imprime_fila(fila_t *fila){
+    if(fila == NULL)
+        return;
+        
+    nodo_f_t *nodo = fila->ini;
+    while (nodo != NULL)
+    {
+        printf("%d ", nodo->elem);
+        nodo = nodo->prox;
+    }
+}
