@@ -24,8 +24,6 @@
     int dado1;   um inteiro para guardar dados do evento 
     int dado2;  um inteiro para guardar dados do evento 
 } evento_t;
-
-
   nodo_t eh uma estrutura interna que representa cada nodo da LEF.
   Externamente o usuario da biblioteca nao vai receber essa estrutura para 
   evitar acesso direto ao ponteiro prox.
@@ -34,8 +32,6 @@ typedef struct nodo_lef {
     evento_t *evento;
     struct nodo_lef *prox;
 } nodo_lef_t;
-
-
   Representacao da LEF 
  
 typedef struct lef {
@@ -122,7 +118,10 @@ int adiciona_inicio_lef (lef_t *l, evento_t *evento){
 int adiciona_ordem_lef (lef_t *l, evento_t *evento){
     if(l == NULL)
         return 0;
-    
+        
+    if(l->Primeiro == NULL)
+        return adiciona_inicio_lef(l, evento);
+        
     nodo_lef_t *ultimo = l->Primeiro;
     while (ultimo->prox != NULL)
         ultimo = ultimo->prox;

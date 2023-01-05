@@ -102,6 +102,8 @@ int cardinalidade_cjt (conjunto_t *c){
  * nao faz nada e retorna 1 tambem. Retorna 0 em caso de falha por falta de espaco.
  */
 int insere_cjt (conjunto_t *c, int elemento){
+    if(c == NULL)
+        return 0;
     if(busca_binaria(c->v, elemento, c->card) != -1)
         return 1;
     if(c->card == c->max)

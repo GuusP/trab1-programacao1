@@ -12,10 +12,8 @@ int main(){
     {
         insere_fila(fila, i);
     }
-
     imprime_fila(fila);
     printf("\n");
-
     int elem;
     retira_fila(fila, &elem);
     imprime_fila(fila);*/
@@ -43,8 +41,8 @@ int main(){
     p->tipo = 12;
 
 
-    adiciona_inicio_lef(l, e);
-    adiciona_inicio_lef(l, j);
+    adiciona_ordem_lef(l, e);
+    adiciona_ordem_lef(l, j);
     adiciona_inicio_lef(l, p);
 
     while (l->Primeiro != NULL)
