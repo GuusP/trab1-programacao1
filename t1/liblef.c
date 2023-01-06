@@ -145,6 +145,9 @@ int adiciona_ordem_lef (lef_t *l, evento_t *evento){
  * a memoria associada eh de quem chama essa funcao.
  */
 evento_t *obtem_primeiro_lef (lef_t *l){
+    if(!l || !l->Primeiro)
+        return NULL;
+        
     nodo_lef_t *primeiro = l->Primeiro;
     l->Primeiro = l->Primeiro->prox;
 

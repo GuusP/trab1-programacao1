@@ -95,14 +95,7 @@ int insere_locais(local locais[], int n, int tamanho_mundo){
     return 1;
 } 
 
-/*int insere_missoes(missao missoes[], conjunto_t cj_habilidades, int n){
-    int i;
-    for (i = 0; i < n; i++)
-    {
-        if(!(missoes[i].hab_necessarias = cria_subcjt_cjt(cj_habilidades)))
-    }
-    
-}*/
+
 /* CHEGADA: dado1 = idHeroi; dado2 = idLocal
 *  SAÍDA: dado1 = idHeroi; dado2 = idLocal
 *  MI
@@ -210,11 +203,65 @@ nodo_lef_t *merge_sort(nodo_lef_t *primeiro){
     return merge(esquerda, direita);
 }
 
+int max(int a, int b){
+    if(a > b)
+        return a;
+    else
+        return b;
+}
+
+/* CHEGADA: dado1 = idHeroi; dado2 = idLocal
+*  SAÍDA: dado1 = idHeroi; dado2 = idLocal*/
+
+void invocar_evento(mundo *meu_mundo, evento_t *ev){
+    switch (ev->tipo)
+    {
+        case 0: {
+            int id_heroi;
+            int id_local;
+            id_heroi = ev->dado1;
+            id_local = ev->dado2;
+            local local_atual = meu_mundo->locais[id_local];
+            heroi heroi_atual = meu_mundo->herois[id_heroi];
+
+            printf("%6d:CHEGA HEROI %2d Local %d ( %d/%d), ", meu_mundo->tempo_atual, id_heroi, id_local, local_atual.publico->card, local_atual.lotacao_max);
+            if(cardinalidade_cjt(local_atual.publico) >= local_atual.lotacao_max){
+                if (((heroi_atual.paciencia / 4) - tamanho_fila(local_atual.fila_entrada)) > 0){
+                    insere_fila(local_atual.fila_entrada, id_heroi);
+                    printf("FILA %d", tamanho_fila(local_atual.fila_entrada));
+                }
+                
+                else{
+                    adiciona_inicio_lef(meu_mundo->eventos_futuros, criar_evento(id_heroi, id_local, meu_mundo->tempo_atual, 1));
+                    printf("DESISTE");
+                }
+                    
+            
+            }
+            else{
+                printf("ENTRA");
+
+                int tpl = max(1, heroi_atual.paciencia / 10 + (rand() % 8 - 2));
+
+                insere_cjt(local_atual.publico, id_heroi);
+                adiciona_ordem_lef(meu_mundo->eventos_futuros, criar_evento(id_heroi, id_local, meu_mundo->tempo_atual + tpl, 2));
+            }
+            printf("\n");
+        break;
+    
+        default:
+            printf("\nnot defined yet.\n");
+            break;
+        }
+        
+    }
+}
+
 
 /*TODO: remover printfs de debug*/
 int main(){
 
-    srand(1);
+
     mundo *meu_mundo;
     if(!(meu_mundo = malloc(sizeof(mundo))))
         exit(0);
@@ -257,16 +304,30 @@ int main(){
         exit(0);
     }
         
-    for (i = 0; i < meu_mundo->num_herois; i++)
-        adiciona_ordem_lef(meu_mundo->eventos_futuros, criar_evento(i, rand() % meu_mundo->num_locais, rand() % (96 * 7 + 1), 0));
+    for (i = 0; i < meu_mundo->num_herois; i++){
+        if(!adiciona_ordem_lef(meu_mundo->eventos_futuros, criar_evento(i, rand() % meu_mundo->num_locais, rand() % (96 * 7 + 1), 0))){
+            printf("Falha ao adicionar EVENTO chegadas");
+            exit(0);
+        }
+    }
+        
 
-    for (i = 0; i < meu_mundo->num_missoes; i++)
-        adiciona_ordem_lef(meu_mundo->eventos_futuros, criar_evento(i, 0, rand() % (meu_mundo->fim_do_mundo + 1), 3));
-    
-
+    for (i = 0; i < meu_mundo->num_missoes; i++){
+        if(!adiciona_ordem_lef(meu_mundo->eventos_futuros, criar_evento(i, 0, rand() % (meu_mundo->fim_do_mundo + 1), 2))){
+            printf("Falha ao adicionar EVENTO missoes");
+            exit(0);
+        }
+    }
+        
+    adiciona_ordem_lef(meu_mundo->eventos_futuros, criar_evento(0, 0, meu_mundo->fim_do_mundo, 3));
 
     meu_mundo->eventos_futuros->Primeiro = merge_sort(meu_mundo->eventos_futuros->Primeiro);
-    imprime_lef(meu_mundo->eventos_futuros);
+    evento_t *prox_evento;
+    while ((prox_evento = obtem_primeiro_lef(meu_mundo->eventos_futuros)))
+    {
+        invocar_evento(meu_mundo, prox_evento);
+    }
+    
 
     return 0;
 }

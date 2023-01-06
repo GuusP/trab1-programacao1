@@ -108,13 +108,14 @@ int insere_fila (fila_t *f, int elemento){
             return 0;
 
         f->fim = f->ini;
-        
+        f->tamanho += 1;
         return 1;
     }
 
     if(!(f->fim = criar_nodo(f->fim, elemento)))
         return 0;
 
+    f->tamanho += 1;
     return 1;
 }
 
@@ -130,6 +131,7 @@ int retira_fila (fila_t *f, int *elemento){
     nodo_f_t *novo_inicio = f->ini->prox;
     destroir_nodo(f->ini);
     f->ini = novo_inicio;
+    f->tamanho -= 1;
     
     return 1;
 }
