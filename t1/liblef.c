@@ -48,7 +48,6 @@ lef_t *cria_lef (){
         return NULL;
 
     lista->Primeiro = NULL;
-
     return lista;
     
 }
@@ -107,6 +106,7 @@ int adiciona_inicio_lef (lef_t *l, evento_t *evento){
     memcpy(novo_nodo->evento, evento, sizeof(evento_t));
     novo_nodo->prox = l->Primeiro;
     l->Primeiro = novo_nodo;
+   
     return 1;
 }
 
@@ -131,6 +131,7 @@ int adiciona_ordem_lef (lef_t *l, evento_t *evento){
         return 0;
     
     memcpy(novo_nodo->evento, evento, sizeof(evento_t));
+    novo_nodo->prox = NULL;
     ultimo->prox = novo_nodo;
 
     return 1;
