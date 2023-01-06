@@ -141,9 +141,10 @@ int retira_cjt (conjunto_t *c, int elemento){
  * Retorna 1 se o elemento pertence ao conjunto e 0 caso contrario.
  */
 int pertence_cjt (conjunto_t *c, int elemento){
-    if(c->card == 0)
+    if(!c || c->card == 0)
         return 0;
 
+    ordenar_vetor(c->v , c->card);
     if(busca_binaria(c->v, elemento, c->card) == -1)
         return 0;
     
@@ -358,7 +359,7 @@ void imprime_cjt (conjunto_t *c){
     int i;
     for(i = 0; i < c->card; i += 1)
         printf("%d ", c->v[i]);
-    printf("\n");
+
 }
 
 /*

@@ -67,6 +67,8 @@ int vazia_fila (fila_t *f){
  * Retorna o tamanho da fila, isto eh, o numero de elementos presentes nela.
  */
 int tamanho_fila (fila_t *f){
+    if(!f || !f->ini)
+        return 0;
     return f->tamanho;
 }
 
@@ -74,6 +76,7 @@ int tamanho_fila (fila_t *f){
  * Cria um nodo e retorna o endereço do nodo caso sucesso e NULL caso contrário
  */
 nodo_f_t *criar_nodo(nodo_f_t *fim_fila, int elemento){
+
     nodo_f_t *aux;
 
     aux = fim_fila;
@@ -103,6 +106,9 @@ nodo_f_t *destroir_nodo(nodo_f_t *nodo){
  * Retorna 1 se a operacao foi bem sucedida e 0 caso contrario.
  */
 int insere_fila (fila_t *f, int elemento){
+    if(!f)
+        return 0;
+
     if(f->ini == NULL){
         if(!(f->ini = criar_nodo(f->fim, elemento)))
             return 0;
@@ -124,7 +130,7 @@ int insere_fila (fila_t *f, int elemento){
  * Retorna 1 se a operacao foi bem sucedida e 0 caso contrario.
  */
 int retira_fila (fila_t *f, int *elemento){
-    if(!f->ini)
+    if(!f || !f->ini || f->tamanho <= 0)
         return 0;
     
     *elemento = f->ini->elem;

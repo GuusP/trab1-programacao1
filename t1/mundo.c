@@ -4,6 +4,7 @@
 #include "libfila.h"
 #include "liblef.h"
 #include <time.h>
+#include <math.h>
 #define N_TAMANHO_MUNDO 20000
 #define N_HABILIDADES 10
 #define N_HEROIS N_HABILIDADES*5
@@ -210,10 +211,14 @@ int max(int a, int b){
         return b;
 }
 
+int  distancia_pontos(localizacao ponto_a, localizacao ponto_b){
+    return sqrt(pow(ponto_b.x - ponto_a.x, 2) + pow(ponto_b.y - ponto_a.y, 2));
+}
 /* CHEGADA: dado1 = idHeroi; dado2 = idLocal
 *  SAÍDA: dado1 = idHeroi; dado2 = idLocal*/
 
 void invocar_evento(mundo *meu_mundo, evento_t *ev){
+    meu_mundo->tempo_atual = ev->tempo;
     switch (ev->tipo)
     {
         case 0: {
@@ -234,9 +239,9 @@ void invocar_evento(mundo *meu_mundo, evento_t *ev){
                 else{
                     adiciona_inicio_lef(meu_mundo->eventos_futuros, criar_evento(id_heroi, id_local, meu_mundo->tempo_atual, 1));
                     printf("DESISTE");
+                    meu_mundo->eventos_futuros->Primeiro = merge_sort(meu_mundo->eventos_futuros->Primeiro);
                 }
-                    
-            
+                               
             }
             else{
                 printf("ENTRA");
@@ -244,13 +249,52 @@ void invocar_evento(mundo *meu_mundo, evento_t *ev){
                 int tpl = max(1, heroi_atual.paciencia / 10 + (rand() % 8 - 2));
 
                 insere_cjt(local_atual.publico, id_heroi);
-                adiciona_ordem_lef(meu_mundo->eventos_futuros, criar_evento(id_heroi, id_local, meu_mundo->tempo_atual + tpl, 2));
+                adiciona_ordem_lef(meu_mundo->eventos_futuros, criar_evento(id_heroi, id_local, meu_mundo->tempo_atual + tpl, 1));
+                meu_mundo->eventos_futuros->Primeiro = merge_sort(meu_mundo->eventos_futuros->Primeiro);
             }
             printf("\n");
         break;
+
+        case 1: {
+
+            int id_heroi;
+            int id_local;
+            id_heroi = ev->dado1;
+            id_local = ev->dado2;
+            local local_atual = meu_mundo->locais[id_local];
+            heroi heroi_atual = meu_mundo->herois[id_heroi];
+            int primeiro_fila;
+            int id_destino = rand() % meu_mundo->num_locais;
+            int tdl = distancia_pontos(local_atual.ponto, meu_mundo->locais[id_destino].ponto) / (100-max(0, meu_mundo->herois[id_heroi].idade - 40));
+
+            printf("%6d:SAIDA HEROI %2d Local %d ( %d/%d)", meu_mundo->tempo_atual, id_heroi, id_local, local_atual.publico->card, local_atual.lotacao_max);
+            
+            adiciona_inicio_lef(meu_mundo->eventos_futuros, criar_evento(id_heroi, id_destino, meu_mundo->tempo_atual + tdl/15, 0));
+            meu_mundo->eventos_futuros->Primeiro = merge_sort(meu_mundo->eventos_futuros->Primeiro);
+            if(pertence_cjt(local_atual.publico, id_heroi)){
+                imprime_cjt(local_atual.publico);
+                printf("  --heroi: %d -- ", id_heroi);
+                if(retira_fila(local_atual.fila_entrada, &primeiro_fila)){
+                    adiciona_inicio_lef(meu_mundo->eventos_futuros, criar_evento(primeiro_fila, id_local, meu_mundo->tempo_atual, 0));
+                    printf(", REMOVE FILA HEROI %2d", primeiro_fila);
+                }
+                
+                retira_cjt(local_atual.publico, id_heroi);
+            }
+            
+            printf("\n");
+            break;
+        }
+
+        case 3:{
+            printf("%6d:FIM\n", meu_mundo->tempo_atual);
+            meu_mundo->eventos_futuros = destroi_lef(meu_mundo->eventos_futuros);
+
+            break;
+        }
     
         default:
-            printf("\nnot defined yet.\n");
+            printf("\nCaso %2d not defined yet. \n", ev->tipo);
             break;
         }
         
@@ -261,7 +305,7 @@ void invocar_evento(mundo *meu_mundo, evento_t *ev){
 /*TODO: remover printfs de debug*/
 int main(){
 
-
+    srand(0);
     mundo *meu_mundo;
     if(!(meu_mundo = malloc(sizeof(mundo))))
         exit(0);
@@ -326,6 +370,7 @@ int main(){
     while ((prox_evento = obtem_primeiro_lef(meu_mundo->eventos_futuros)))
     {
         invocar_evento(meu_mundo, prox_evento);
+        
     }
     
 
