@@ -374,6 +374,9 @@ void imprime_cjt (conjunto_t *c){
  * Inicializa ptr usado na funcao incrementa_iterador 
  */
 void inicia_iterador_cjt (conjunto_t *c){
+    if(!c)
+        return;
+
     c->ptr = 0;
 }
 
@@ -383,6 +386,9 @@ void inicia_iterador_cjt (conjunto_t *c){
  * 1 caso o iterador aponte para um elemento valido (dentro do conjunto).
  */
 int incrementa_iterador_cjt (conjunto_t *c, int *ret_iterador){
+    if(c == NULL || c->card == 0)
+        return 0;
+
     if(c->ptr < c->card){
         *ret_iterador = c->v[c->ptr];
         c->ptr += 1;
