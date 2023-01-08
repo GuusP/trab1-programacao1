@@ -149,7 +149,8 @@ evento_t *obtem_primeiro_lef (lef_t *l){
         return NULL;
         
     nodo_lef_t *primeiro = l->Primeiro;
+    evento_t *ev = primeiro->evento;
     l->Primeiro = l->Primeiro->prox;
-
-    return primeiro->evento;
+    free(primeiro);
+    return ev;
 }
