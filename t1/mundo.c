@@ -141,83 +141,6 @@ void imprime_lef(lef_t *l){
     }
 }
 
-/* Os métodos a seguir implementam um MergeSort para ordenar a LEF 
- * Foi escolhido ele porque tem um custo mais barato que outros quando
- * se tem muitos elementos e ele tem um custo baixo de memória ao ser usado em
- * listas lincadas. (vimos esse algoritmo para ordenar vetores em alg2. pesquisei como adaptar para
- * listas lincadas).
-*/
-
-nodo_lef_t *obter_meio_lef(nodo_lef_t *primeiro){
-   
-    nodo_lef_t *fast;
-    nodo_lef_t *slow;
-    fast = primeiro->prox;
-    slow = primeiro;
-
-    while (fast != NULL && fast->prox != NULL)
-    {
-        fast = fast->prox->prox; 
-        slow = slow->prox;
-    }
-
-    return slow;
-}
-
-nodo_lef_t *merge_lef(nodo_lef_t *lista1, nodo_lef_t *lista2){
-    nodo_lef_t *inicio_lista;
-    nodo_lef_t *fim_lista;
-    inicio_lista = NULL;
-
-    while (lista1 != NULL && lista2 != NULL)
-    {
-        nodo_lef_t *novo_nodo;
-        if(lista1->evento->tempo <= lista2->evento->tempo){
-            novo_nodo = lista1; 
-            lista1 = lista1->prox;
-        }else{
-            novo_nodo = lista2;
-            lista2 = lista2->prox;
-        }
-
-        if(inicio_lista == NULL){
-            inicio_lista = novo_nodo;
-            fim_lista = novo_nodo;
-            inicio_lista->prox = NULL;
-        }else{
-            fim_lista->prox = novo_nodo;
-            fim_lista = fim_lista->prox;
-        }
-        
-    }
-    
-    if(lista1 != NULL)
-        fim_lista->prox = lista1;
-    else
-        fim_lista->prox = lista2;
-
-    return inicio_lista;
-}
-
-nodo_lef_t *merge_sort_lef(nodo_lef_t *primeiro){
-    if(primeiro == NULL || primeiro->prox == NULL)
-        return primeiro;
-
-    nodo_lef_t *esquerda;
-    nodo_lef_t *direita;
-    nodo_lef_t *meio;
-
-    esquerda = primeiro;
-    meio = obter_meio_lef(primeiro);
-    direita = meio->prox;
-    meio->prox = NULL;
-   
-    esquerda = merge_sort_lef(esquerda);
-    direita = merge_sort_lef(direita);
-
-    return merge_lef(esquerda, direita);
-}
-
 int max(int a, int b){
     if(a > b)
         return a;
@@ -257,17 +180,15 @@ void invocar_evento(mundo *meu_mundo, evento_t *ev){
                 else{
                     adiciona_inicio_lef(meu_mundo->eventos_futuros, editar_evento(ev, id_heroi, id_local, meu_mundo->tempo_atual, 1));
                     printf("DESISTE");
-                    meu_mundo->eventos_futuros->Primeiro = merge_sort_lef(meu_mundo->eventos_futuros->Primeiro);
                 }                   
             }
             else{
                 printf("ENTRA");
 
-                int tpl = max(1, heroi_atual.paciencia / 10 + (rand() % 8 - 2));
+                int tpl = max(1, heroi_atual.paciencia / 10 + (rand() % (6 + 1 - (-2)) - 2));
 
                 insere_cjt(local_atual.publico, id_heroi);
                 adiciona_ordem_lef(meu_mundo->eventos_futuros, editar_evento(ev, id_heroi, id_local, meu_mundo->tempo_atual + tpl, 1));
-                meu_mundo->eventos_futuros->Primeiro = merge_sort_lef(meu_mundo->eventos_futuros->Primeiro);
             }
             printf("\n");
             ev = destroi_evento(ev);
@@ -284,10 +205,10 @@ void invocar_evento(mundo *meu_mundo, evento_t *ev){
 
             printf("%6d:SAIDA HEROI %2d Local %d ( %d/%d)", meu_mundo->tempo_atual, id_heroi, id_local, local_atual.publico->card, local_atual.lotacao_max);
             
-            adiciona_inicio_lef(meu_mundo->eventos_futuros, editar_evento(ev, id_heroi, id_destino, meu_mundo->tempo_atual + tdl/15, 0));
-            meu_mundo->eventos_futuros->Primeiro = merge_sort_lef(meu_mundo->eventos_futuros->Primeiro);
+            adiciona_ordem_lef(meu_mundo->eventos_futuros, editar_evento(ev, id_heroi, id_destino, meu_mundo->tempo_atual + tdl/15, 0));
+
             if(pertence_cjt(local_atual.publico, id_heroi)){
-                imprime_cjt(local_atual.publico);
+                imprime_cjt(local_atual.publico); /*TODO: remover essa linha de debug*/
                 if(retira_fila(local_atual.fila_entrada, &primeiro_fila)){
                     adiciona_inicio_lef(meu_mundo->eventos_futuros, editar_evento(ev, primeiro_fila, id_local, meu_mundo->tempo_atual, 0));
                     printf(", REMOVE FILA HEROI %2d", primeiro_fila);
@@ -462,10 +383,14 @@ int main(){
     }
     
 
-    adiciona_ordem_lef(meu_mundo->eventos_futuros, editar_evento(ev, 0, 0, meu_mundo->fim_do_mundo, 3));
+    if(!adiciona_ordem_lef(meu_mundo->eventos_futuros, editar_evento(ev, 0, 0, meu_mundo->fim_do_mundo, 3))){
+        printf("Erro ao adicionar missao de FIM DO MUNDO");
+        exit(0);
+    }
+        
     ev = destroi_evento(ev);
     imprime_lef(meu_mundo->eventos_futuros);
-    meu_mundo->eventos_futuros->Primeiro = merge_sort_lef(meu_mundo->eventos_futuros->Primeiro);
+    
     evento_t *prox_evento;
     while ((prox_evento = obtem_primeiro_lef(meu_mundo->eventos_futuros)))
     {
