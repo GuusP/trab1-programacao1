@@ -119,6 +119,9 @@ int adiciona_ordem_lef (lef_t *l, evento_t *evento){
     if(l == NULL)
         return 0;
 
+    if(l->Primeiro == NULL || evento->tempo < l->Primeiro->evento->tempo)
+        return adiciona_inicio_lef(l, evento);
+    
     nodo_lef_t *novo_nodo;
    
     if(!(novo_nodo = cria_nodo_lef()))
@@ -127,8 +130,7 @@ int adiciona_ordem_lef (lef_t *l, evento_t *evento){
     memcpy(novo_nodo->evento, evento, sizeof(evento_t));
     novo_nodo->prox = NULL;
 
-    if(l->Primeiro == NULL || novo_nodo->evento->tempo < l->Primeiro->evento->tempo)
-        return adiciona_inicio_lef(l, evento);
+    
 
     nodo_lef_t *atual = l->Primeiro;
     while (atual->prox != NULL && atual->prox->evento->tempo <= novo_nodo->evento->tempo)
