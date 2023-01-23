@@ -60,9 +60,9 @@ int insere_herois(heroi herois[], int n, conjunto_t *habilidades){
     {
         herois[i].id = i;
         herois[i].exp = 0;
-        herois[i].idade = (rand() % 83) + 18;
-        herois[i].paciencia = rand() % 101;
-        if(!(herois[i].habilidades = cria_subcjt_cjt(habilidades, (rand() % 4) + 2)))
+        herois[i].idade = (rand() % (100 - 18 + 1) + 18);
+        herois[i].paciencia = (rand() % 101);
+        if(!(herois[i].habilidades = cria_subcjt_cjt(habilidades, (rand() % (5 - 2 + 1) + 2))))
             return 0;
     }
     return 1;
@@ -73,7 +73,7 @@ int insere_locais(local locais[], int n, int tamanho_mundo){
     for (i = 0; i < n; i++)
     {
         locais[i].id = i;
-        locais[i].lotacao_max = (rand() % 26) + 5;
+        locais[i].lotacao_max = (rand() % (30 - 5 + 1) + 5);
         locais[i].ponto.x = rand() % tamanho_mundo;
         locais[i].ponto.y = rand() % tamanho_mundo;
         if(!(locais[i].fila_entrada = cria_fila()))
@@ -154,9 +154,9 @@ int  distancia_pontos(localizacao ponto_a, localizacao ponto_b){
 /* CHEGADA: dado1 = idHeroi; dado2 = idLocal
 *  SAÍDA: dado1 = idHeroi; dado2 = idLocal*/
 
-/*Funções para odenar o array de locais*/
 
-void invocar_evento(mundo *meu_mundo, evento_t *ev){
+/*Função para executar um evento. Retorna 1 em caso de sucesso e 0 em caso de falha*/
+int invocar_evento(mundo *meu_mundo, evento_t *ev){
     meu_mundo->tempo_atual = ev->tempo;
     int id_heroi;
     int id_local;
@@ -173,12 +173,15 @@ void invocar_evento(mundo *meu_mundo, evento_t *ev){
             printf("%6d:CHEGA HEROI %2d Local %d ( %d/%d), ", meu_mundo->tempo_atual, id_heroi, id_local, local_atual.publico->card, local_atual.lotacao_max);
             if(cardinalidade_cjt(local_atual.publico) >= local_atual.lotacao_max){
                 if (((heroi_atual.paciencia / 4) - tamanho_fila(local_atual.fila_entrada)) > 0){
-                    insere_fila(local_atual.fila_entrada, id_heroi); 
+                    if(!insere_fila(local_atual.fila_entrada, id_heroi))
+                        return 0; 
                     printf("FILA %d", tamanho_fila(local_atual.fila_entrada));
                 }
                 
                 else{
-                    adiciona_inicio_lef(meu_mundo->eventos_futuros, editar_evento(ev, id_heroi, id_local, meu_mundo->tempo_atual, 1));
+                    if(!adiciona_inicio_lef(meu_mundo->eventos_futuros, editar_evento(ev, id_heroi, id_local, meu_mundo->tempo_atual, 1)))
+                        return 0;
+
                     printf("DESISTE");
                 }                   
             }
@@ -187,8 +190,11 @@ void invocar_evento(mundo *meu_mundo, evento_t *ev){
 
                 int tpl = max(1, heroi_atual.paciencia / 10 + (rand() % (6 + 1 - (-2)) - 2));
 
-                insere_cjt(local_atual.publico, id_heroi);
-                adiciona_ordem_lef(meu_mundo->eventos_futuros, editar_evento(ev, id_heroi, id_local, meu_mundo->tempo_atual + tpl, 1));
+                if(!insere_cjt(local_atual.publico, id_heroi))
+                    return 0;
+
+                if(!adiciona_ordem_lef(meu_mundo->eventos_futuros, editar_evento(ev, id_heroi, id_local, meu_mundo->tempo_atual + tpl, 1)))
+                    return 0;
             }
             printf("\n");
             ev = destroi_evento(ev);
@@ -205,12 +211,15 @@ void invocar_evento(mundo *meu_mundo, evento_t *ev){
 
             printf("%6d:SAIDA HEROI %2d Local %d ( %d/%d)", meu_mundo->tempo_atual, id_heroi, id_local, local_atual.publico->card, local_atual.lotacao_max);
             
-            adiciona_ordem_lef(meu_mundo->eventos_futuros, editar_evento(ev, id_heroi, id_destino, meu_mundo->tempo_atual + tdl/15, 0));
+            if(!adiciona_ordem_lef(meu_mundo->eventos_futuros, editar_evento(ev, id_heroi, id_destino, meu_mundo->tempo_atual + tdl/15, 0)))
+                return 0;
 
             if(pertence_cjt(local_atual.publico, id_heroi)){
                 imprime_cjt(local_atual.publico); /*TODO: remover essa linha de debug*/
                 if(retira_fila(local_atual.fila_entrada, &primeiro_fila)){
-                    adiciona_inicio_lef(meu_mundo->eventos_futuros, editar_evento(ev, primeiro_fila, id_local, meu_mundo->tempo_atual, 0));
+                    if(!adiciona_inicio_lef(meu_mundo->eventos_futuros, editar_evento(ev, primeiro_fila, id_local, meu_mundo->tempo_atual, 0)))
+                        return 0;
+
                     printf(", REMOVE FILA HEROI %2d", primeiro_fila);
                 }
                 
@@ -227,7 +236,9 @@ void invocar_evento(mundo *meu_mundo, evento_t *ev){
             int num_locais = meu_mundo->num_locais;
             conjunto_t *missao;
             int id_missao = ev->dado1;
-            missao = cria_subcjt_cjt(meu_mundo->cj_habilidades, rand()%(6-3) + 3 );
+            if(!(missao = cria_subcjt_cjt(meu_mundo->cj_habilidades, rand()%(6-3 + 1) + 3 )))
+                return 0;
+
             int i;
             int id_equipe = -1;
             conjunto_t *equipe;
@@ -242,14 +253,17 @@ void invocar_evento(mundo *meu_mundo, evento_t *ev){
                 id_local = i;
                 int j;
                 
-                uniao = cria_cjt(meu_mundo->num_habilidades);
+                if(!(uniao = cria_cjt(meu_mundo->num_habilidades)))
+                    return 0;
+
                 inicia_iterador_cjt(meu_mundo->locais[i].publico);
                 for (j = 0; j < cardinalidade_cjt(meu_mundo->locais[i].publico); j++)
                 {
                     conjunto_t *aux;
                     incrementa_iterador_cjt(meu_mundo->locais[i].publico, &id_heroi);
                     aux = uniao;
-                    uniao = uniao_cjt(uniao, meu_mundo->herois[id_heroi].habilidades);
+                    if(!(uniao = uniao_cjt(uniao, meu_mundo->herois[id_heroi].habilidades)))
+                        return 0;
                     destroi_cjt(aux);
                 }
 
@@ -262,7 +276,8 @@ void invocar_evento(mundo *meu_mundo, evento_t *ev){
                     conjunto_t *aux;
                     id_equipe = i;
                     aux = equipe;
-                    equipe = copia_cjt(meu_mundo->locais[i].publico);
+                    if(!(equipe = copia_cjt(meu_mundo->locais[i].publico)))
+                        return 0;
                     
                     if(aux)
                         destroi_cjt(aux);
@@ -274,7 +289,8 @@ void invocar_evento(mundo *meu_mundo, evento_t *ev){
             
             if(id_equipe == -1){
                 printf("%6d:MISSAO %d IMPOSSIVEL\n", meu_mundo->tempo_atual, id_missao);
-                adiciona_ordem_lef(meu_mundo->eventos_futuros, editar_evento(ev, ev->dado1, ev->dado2, rand()%((meu_mundo->fim_do_mundo-1)- meu_mundo->tempo_atual) + meu_mundo->tempo_atual, 2));
+                if(!(adiciona_ordem_lef(meu_mundo->eventos_futuros, editar_evento(ev, ev->dado1, ev->dado2, rand()%((meu_mundo->fim_do_mundo-1)- meu_mundo->tempo_atual + 1) + meu_mundo->tempo_atual, 2))))
+                    return 0;
             }
             else{
                 printf("%6d:MISSAO %d HER_EQS %d:", meu_mundo->tempo_atual, id_missao, id_equipe);
@@ -308,6 +324,8 @@ void invocar_evento(mundo *meu_mundo, evento_t *ev){
             break;
 
     }
+
+    return 1;
 }
 
 
@@ -389,12 +407,14 @@ int main(){
     }
         
     ev = destroi_evento(ev);
-    imprime_lef(meu_mundo->eventos_futuros);
     
     evento_t *prox_evento;
     while ((prox_evento = obtem_primeiro_lef(meu_mundo->eventos_futuros)))
     {
-        invocar_evento(meu_mundo, prox_evento);
+        if(!(invocar_evento(meu_mundo, prox_evento))){ 
+            printf("Falha ao executar o evento");
+            exit(0);
+        }
 
     }
 
