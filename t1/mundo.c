@@ -56,7 +56,7 @@ typedef struct mundo
 
 int insere_herois(heroi herois[], int n, conjunto_t *habilidades){
     int i;
-    for (i = 0; i < n; i++)
+    for (i = 0; i < n; i += 1)
     {
         herois[i].id = i;
         herois[i].exp = 0;
@@ -70,7 +70,7 @@ int insere_herois(heroi herois[], int n, conjunto_t *habilidades){
 
 int insere_locais(local locais[], int n, int tamanho_mundo){
     int i;
-    for (i = 0; i < n; i++)
+    for (i = 0; i < n; i += 1)
     {
         locais[i].id = i;
         locais[i].lotacao_max = (rand() % (30 - 5 + 1) + 5);
@@ -248,7 +248,7 @@ int invocar_evento(mundo *meu_mundo, evento_t *ev){
             printf("%6d:MISSAO %d HAB_REQ ", meu_mundo->tempo_atual, id_missao);
             imprime_cjt(missao);
             printf("\n");
-            for (i = 0; i < num_locais; i++)
+            for (i = 0; i < num_locais; i += 1)
             {
                 id_local = i;
                 int j;
@@ -257,7 +257,7 @@ int invocar_evento(mundo *meu_mundo, evento_t *ev){
                     return 0;
 
                 inicia_iterador_cjt(meu_mundo->locais[i].publico);
-                for (j = 0; j < cardinalidade_cjt(meu_mundo->locais[i].publico); j++)
+                for (j = 0; j < cardinalidade_cjt(meu_mundo->locais[i].publico); j += 1)
                 {
                     conjunto_t *aux;
                     incrementa_iterador_cjt(meu_mundo->locais[i].publico, &id_heroi);
@@ -356,7 +356,7 @@ int main(){
     }
         
     int i;
-    for(i = 0; i < meu_mundo->num_habilidades; i++){
+    for(i = 0; i < meu_mundo->num_habilidades; i += 1){
         if(!insere_cjt(meu_mundo->cj_habilidades, i)){
             printf("Erro ao inserir habilidades");
             exit(0);
@@ -375,7 +375,7 @@ int main(){
     }
         
     evento_t *ev = criar_evento(0, 0, 0, 0);
-    for (i = 0; i < meu_mundo->num_herois; i++){
+    for (i = 0; i < meu_mundo->num_herois; i += 1){
         if(!(ev = editar_evento(ev, i, rand() % meu_mundo->num_locais, rand() % (96 * 7 + 1), 0))){
             printf("Falha ao criar EVENTO chegadas");
             exit(0);
@@ -388,7 +388,7 @@ int main(){
     }
         
     
-    for (i = 0; i < meu_mundo->num_missoes; i++){
+    for (i = 0; i < meu_mundo->num_missoes; i += 1){
         if(!(ev = editar_evento(ev, i, 0, rand() % (meu_mundo->fim_do_mundo + 1), 2))){
             printf("Falha ao criar EVENTO chegadas");
             exit(0);
@@ -418,16 +418,16 @@ int main(){
 
     }
 
-    for (i = 0; i < meu_mundo->num_herois; i++)
+    for (i = 0; i < meu_mundo->num_herois; i += 1)
     {
         printf("HEROI %2d EXPERIENCIA %d\n", meu_mundo->herois[i].id, meu_mundo->herois[i].exp);
     }
     
 
-    for (i = 0; i < meu_mundo->num_herois; i++)
+    for (i = 0; i < meu_mundo->num_herois; i += 1)
        meu_mundo->herois[i].habilidades = destroi_cjt(meu_mundo->herois[i].habilidades);
     
-    for (i = 0; i < meu_mundo->num_locais; i++){
+    for (i = 0; i < meu_mundo->num_locais; i += 1){
         meu_mundo->locais[i].fila_entrada = destroi_fila(meu_mundo->locais[i].fila_entrada);
         meu_mundo->locais[i].publico = destroi_cjt(meu_mundo->locais[i].publico);
     }
