@@ -164,6 +164,7 @@ int invocar_evento(mundo *meu_mundo, evento_t *ev){
 
     switch (ev->tipo)
     {
+        /*caso o evento seja chegada*/
         case 0: {
             id_heroi = ev->dado1;
             id_local = ev->dado2;
@@ -201,6 +202,7 @@ int invocar_evento(mundo *meu_mundo, evento_t *ev){
             break;
         }
 
+        /*caso o evento seja saída*/
         case 1: {
             id_heroi = ev->dado1;
             id_local = ev->dado2;
@@ -231,6 +233,7 @@ int invocar_evento(mundo *meu_mundo, evento_t *ev){
             break;
         }
 
+        /*caso o evento seja missão*/
         case 2:{    
    
             int num_locais = meu_mundo->num_locais;
@@ -309,6 +312,7 @@ int invocar_evento(mundo *meu_mundo, evento_t *ev){
             break;
         }
 
+        /*caso o evento seja fim do mundo*/
         case 3:{
             printf("%6d:FIM\n", meu_mundo->tempo_atual);
             ev = destroi_evento(ev);
