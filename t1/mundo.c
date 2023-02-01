@@ -78,6 +78,7 @@ int insere_locais(local locais[], int n, int tamanho_mundo){
         locais[i].ponto.y = rand() % tamanho_mundo;
         if(!(locais[i].fila_entrada = cria_fila()))
             return 0;
+
         if(!(locais[i].publico = cria_cjt(locais[i].lotacao_max))){
             destroi_fila(locais[i].fila_entrada);
             return 0;
@@ -87,11 +88,11 @@ int insere_locais(local locais[], int n, int tamanho_mundo){
     return 1;
 } 
 
-
 /* CHEGADA: dado1 = idHeroi; dado2 = idLocal
 *  SAÍDA: dado1 = idHeroi; dado2 = idLocal
-*  MI
+*  MISSÃO: dado1 = idHeroi
 */
+
 evento_t *criar_evento(int dado1, int dado2, int tempo, int tipo){
     evento_t *ev;
     
@@ -105,6 +106,7 @@ evento_t *criar_evento(int dado1, int dado2, int tempo, int tipo){
     return ev;
 }
 
+/* criei esse método para não precisar dar malloc para "criar" um novo evento */
 evento_t *editar_evento(evento_t *ev, int dado1, int dado2, int tempo, int tipo){
     if(!ev)
         return NULL;
@@ -127,16 +129,12 @@ evento_t *destroi_evento(evento_t *ev){
 
 
 void imprime_lef(lef_t *l){
-        nodo_lef_t *primeiro;
-        primeiro = l->Primeiro;
+    nodo_lef_t *primeiro;
+    primeiro = l->Primeiro;
+
     while (primeiro != NULL)
     {
-        
-        printf("%d ", primeiro->evento->dado1);
-        printf("%d ", primeiro->evento->dado2);
-        printf("%d ", primeiro->evento->tempo);
-        printf("%d ", primeiro->evento->tipo);
-        printf("\n");
+        printf("%d %d %d %d\n", primeiro->evento->dado1, primeiro->evento->dado2, primeiro->evento->tempo, primeiro->evento->tipo);
         primeiro = primeiro->prox;
     }
 }
@@ -151,11 +149,10 @@ int max(int a, int b){
 int  distancia_pontos(localizacao ponto_a, localizacao ponto_b){
     return sqrt(pow(ponto_b.x - ponto_a.x, 2) + pow(ponto_b.y - ponto_a.y, 2));
 }
-/* CHEGADA: dado1 = idHeroi; dado2 = idLocal
-*  SAÍDA: dado1 = idHeroi; dado2 = idLocal*/
 
-
-/*Função para executar um evento. Retorna 1 em caso de sucesso e 0 em caso de falha*/
+/*Função para executar um evento. Retorna 1 em caso de sucesso e 0 em caso de falha
+* Uma falha ocorre quando algum malloc ou free da errado
+*/
 int invocar_evento(mundo *meu_mundo, evento_t *ev){
     meu_mundo->tempo_atual = ev->tempo;
     int id_heroi;
@@ -171,14 +168,14 @@ int invocar_evento(mundo *meu_mundo, evento_t *ev){
             local local_atual = meu_mundo->locais[id_local];
             heroi heroi_atual = meu_mundo->herois[id_heroi];
 
-            printf("%6d:CHEGA HEROI %2d Local %d ( %d/%d), ", meu_mundo->tempo_atual, id_heroi, id_local, local_atual.publico->card, local_atual.lotacao_max);
+            printf("%6d:CHEGA HEROI %2d Local %d (%2d/%2d), ", meu_mundo->tempo_atual, id_heroi, id_local, cardinalidade_cjt(local_atual.publico), local_atual.lotacao_max);
             if(cardinalidade_cjt(local_atual.publico) >= local_atual.lotacao_max){
                 if (((heroi_atual.paciencia / 4) - tamanho_fila(local_atual.fila_entrada)) > 0){
                     if(!insere_fila(local_atual.fila_entrada, id_heroi))
                         return 0; 
-                    printf("FILA %d", tamanho_fila(local_atual.fila_entrada));
+
+                    printf("FILA %2d", tamanho_fila(local_atual.fila_entrada));
                 }
-                
                 else{
                     if(!adiciona_inicio_lef(meu_mundo->eventos_futuros, editar_evento(ev, id_heroi, id_local, meu_mundo->tempo_atual, 1)))
                         return 0;
@@ -198,7 +195,7 @@ int invocar_evento(mundo *meu_mundo, evento_t *ev){
                     return 0;
             }
             printf("\n");
-            ev = destroi_evento(ev);
+            ev = destroi_evento(ev); /* não tem problema destruir o evento nesse endereço pq a lef cria uma nova cópia na memória qnd adiciona*/
             break;
         }
 
@@ -211,7 +208,7 @@ int invocar_evento(mundo *meu_mundo, evento_t *ev){
             int id_destino = rand() % meu_mundo->num_locais;
             int tdl = distancia_pontos(local_atual.ponto, meu_mundo->locais[id_destino].ponto) / (100-max(0, meu_mundo->herois[id_heroi].idade - 40));
 
-            printf("%6d:SAIDA HEROI %2d Local %d ( %d/%d)", meu_mundo->tempo_atual, id_heroi, id_local, local_atual.publico->card, local_atual.lotacao_max);
+            printf("%6d:SAIDA HEROI %2d Local %d (%2d/%2d)", meu_mundo->tempo_atual, id_heroi, id_local, cardinalidade_cjt(local_atual.publico), local_atual.lotacao_max);
             
             if(!adiciona_ordem_lef(meu_mundo->eventos_futuros, editar_evento(ev, id_heroi, id_destino, meu_mundo->tempo_atual + tdl/15, 0)))
                 return 0;
@@ -299,6 +296,7 @@ int invocar_evento(mundo *meu_mundo, evento_t *ev){
                 printf("%6d:MISSAO %d HER_EQS %d:", meu_mundo->tempo_atual, id_missao, id_equipe);
                 imprime_cjt(equipe);
                 printf("\n");
+                
 
                 while(cardinalidade_cjt(equipe)){
                     meu_mundo->herois[retira_um_elemento_cjt(equipe)].exp += 1;
@@ -377,8 +375,13 @@ int main(){
         printf("Erro ao inserir os locais no vetor");
         exit(0);
     }
-        
-    evento_t *ev = criar_evento(0, 0, 0, 0);
+    
+    evento_t *ev;
+    if(!(ev = criar_evento(0, 0, 0, 0))){
+        printf("Falha ao criar evento base");
+        exit(0);
+    }
+
     for (i = 0; i < meu_mundo->num_herois; i += 1){
         if(!(ev = editar_evento(ev, i, rand() % meu_mundo->num_locais, rand() % (96 * 7 + 1), 0))){
             printf("Falha ao criar EVENTO chegadas");
