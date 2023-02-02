@@ -51,6 +51,7 @@ typedef struct mundo
     heroi herois[N_HEROIS];
     local locais[N_LOCAIS];
     conjunto_t *cj_habilidades;
+    conjunto_t *missoes[N_MISSOES]; /*vetor para armazenar o conjunto de habilidades de uma missão para reutilizar caso ela falhe.*/
     
 } mundo;
 
@@ -235,13 +236,22 @@ int invocar_evento(mundo *meu_mundo, evento_t *ev){
             int num_locais = meu_mundo->num_locais;
             conjunto_t *missao;
             int id_missao = ev->dado1;
-            if(!(missao = cria_subcjt_cjt(meu_mundo->cj_habilidades, rand()%(6-3 + 1) + 3 )))
-                return 0;
-
             int i;
             int id_equipe = -1;
             conjunto_t *equipe;
             conjunto_t *uniao;
+
+            /*checa se essa missão já não foi criada antes. se já foi, usa o mesmo conjunto de habilidades de antes*/
+            if(!meu_mundo->missoes[id_missao]){
+                if(!(missao = cria_subcjt_cjt(meu_mundo->cj_habilidades, rand()%(6-3 + 1) + 3 )))
+                    return 0;
+
+                meu_mundo->missoes[id_missao] = missao;
+            }else
+                missao = meu_mundo->missoes[id_missao];
+            
+
+            
             equipe = NULL;
 
             printf("%6d:MISSAO %d HAB_REQ ", meu_mundo->tempo_atual, id_missao);
@@ -288,7 +298,7 @@ int invocar_evento(mundo *meu_mundo, evento_t *ev){
             
             if(id_equipe == -1){
                 printf("%6d:MISSAO %d IMPOSSIVEL\n", meu_mundo->tempo_atual, id_missao);
-                if(!(adiciona_ordem_lef(meu_mundo->eventos_futuros, editar_evento(ev, ev->dado1, ev->dado2, rand()%((meu_mundo->fim_do_mundo-1)- meu_mundo->tempo_atual + 1) + meu_mundo->tempo_atual, 2))))
+                if(!(adiciona_ordem_lef(meu_mundo->eventos_futuros, editar_evento(ev, ev->dado1, ev->dado2, rand()%(meu_mundo->fim_do_mundo- meu_mundo->tempo_atual + 1) + meu_mundo->tempo_atual, 2))))
                     return 0;
             }
             else{
@@ -300,9 +310,11 @@ int invocar_evento(mundo *meu_mundo, evento_t *ev){
                     meu_mundo->herois[retira_um_elemento_cjt(equipe)].exp += 1;
                 
                 equipe = destroi_cjt(equipe);
+                destroi_cjt(missao);
+                meu_mundo->missoes[id_missao] = NULL;
             }
 
-            destroi_cjt(missao);
+            
             destroi_evento(ev);
             break;
         }
@@ -342,7 +354,7 @@ int main(){
     meu_mundo->tam_mundo = N_TAMANHO_MUNDO;
     meu_mundo->num_habilidades = N_HABILIDADES;
     meu_mundo->fim_do_mundo = N_FIM_DO_MUNDO;
-    meu_mundo->num_missoes = N_MISSOES;
+    meu_mundo->num_missoes = N_MISSOES; 
 
     if(!(meu_mundo->eventos_futuros = cria_lef())){
         printf("Erro ao alocar lista de eventos futuros");
@@ -394,7 +406,7 @@ int main(){
     
     for (i = 0; i < meu_mundo->num_missoes; i += 1){
         if(!(ev = editar_evento(ev, i, 0, rand() % (meu_mundo->fim_do_mundo + 1), 2))){
-            printf("Falha ao criar EVENTO chegadas");
+            printf("Falha ao criar EVENTO missoes");
             exit(0);
         }
         if(!adiciona_ordem_lef(meu_mundo->eventos_futuros, ev)){
@@ -402,6 +414,7 @@ int main(){
             exit(0);
         }
         
+        meu_mundo->missoes[i] = NULL; 
     }
     
 
@@ -434,6 +447,11 @@ int main(){
     for (i = 0; i < meu_mundo->num_locais; i += 1){
         meu_mundo->locais[i].fila_entrada = destroi_fila(meu_mundo->locais[i].fila_entrada);
         meu_mundo->locais[i].publico = destroi_cjt(meu_mundo->locais[i].publico);
+    }
+
+    for (i = 0; i < meu_mundo->num_missoes; i += 1){
+        if(meu_mundo->missoes[i])
+            destroi_cjt(meu_mundo->missoes[i]);
     }
         
     meu_mundo->cj_habilidades = destroi_cjt(meu_mundo->cj_habilidades);
