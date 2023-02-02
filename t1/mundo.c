@@ -296,11 +296,9 @@ int invocar_evento(mundo *meu_mundo, evento_t *ev){
                 imprime_cjt(equipe);
                 printf("\n");
                 
-
-                while(cardinalidade_cjt(equipe)){
+                while(cardinalidade_cjt(equipe))
                     meu_mundo->herois[retira_um_elemento_cjt(equipe)].exp += 1;
-                }
-
+                
                 equipe = destroi_cjt(equipe);
             }
 
@@ -333,7 +331,7 @@ int invocar_evento(mundo *meu_mundo, evento_t *ev){
 
 int main(){
 
-    srand(1);
+    srand(time(NULL));
     mundo *meu_mundo;
     if(!(meu_mundo = malloc(sizeof(mundo))))
         exit(0);

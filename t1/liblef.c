@@ -143,8 +143,6 @@ int adiciona_ordem_lef (lef_t *l, evento_t *evento){
     return 1;
 }
 
-
-/*TODO: liberar memória*/
 /* 
  * Retorna e retira o primeiro evento da LEF. 
  * A responsabilidade por desalocar
@@ -156,7 +154,7 @@ evento_t *obtem_primeiro_lef (lef_t *l){
         
     nodo_lef_t *primeiro;
     evento_t *ev;
-    
+
     primeiro = l->Primeiro;
     ev = primeiro->evento;
     l->Primeiro = l->Primeiro->prox;
