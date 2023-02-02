@@ -214,7 +214,6 @@ int invocar_evento(mundo *meu_mundo, evento_t *ev){
                 return 0;
 
             if(pertence_cjt(local_atual.publico, id_heroi)){
-                imprime_cjt(local_atual.publico); /*TODO: remover essa linha de debug*/
                 if(retira_fila(local_atual.fila_entrada, &primeiro_fila)){
                     if(!adiciona_inicio_lef(meu_mundo->eventos_futuros, editar_evento(ev, primeiro_fila, id_local, meu_mundo->tempo_atual, 0)))
                         return 0;
@@ -331,7 +330,7 @@ int invocar_evento(mundo *meu_mundo, evento_t *ev){
 }
 
 
-/*TODO: remover printfs de debug*/
+
 int main(){
 
     srand(1);
