@@ -5,7 +5,7 @@ criar uma simulação de heróis e missões. O enunciado completo está disponí
 O mais importante foi a implementação dos TAD, nos quais utilizei arrays, ponteiros e lista lincadas, e tive que garantir
 que não ocorresse nenhum vazamento de memória.
 
-Para ver os códigos, acesse o diretório t1. Para rodar o programa, basta dar "make" e rodar o ./mundo
+Para ver os códigos, acesse o diretório t1. Para rodar o programa, basta usar o makefile e rodar o ./mundo
 
 [EN]
 In this project, I implemented three types of Abstract Data Types (ADT), which are: set, queue, and list, 
