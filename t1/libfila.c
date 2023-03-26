@@ -1,23 +1,7 @@
 #include <stdlib.h>
 #include "libfila.h"
 #include <stdio.h>
-/*struct nodo_f {
-    int elem;
-    struct nodo_f *prox;
-};
-typedef struct nodo_f nodo_f_t;
 
-struct fila {
-    nodo_f_t *ini;
-    nodo_f_t *fim;
-    int tamanho;  numero de elementos na fila 
-};
-typedef struct fila fila_t;*/
-
-
-/*
- * Remove todos os elementos da fila, libera espaco e devolve NULL.
- */
 fila_t * destroi_fila (fila_t *f){
     if(f == NULL)
         return NULL;
